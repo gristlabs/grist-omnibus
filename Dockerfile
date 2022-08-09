@@ -15,8 +15,10 @@ FROM traefik/whoami as whoami
 # Extend Grist image.
 FROM gristlabs/grist:latest
 
+# apache2-utils is for htpasswd, used with dex
 RUN \
   apt-get update && \
+  apt-get install -y --no-install-recommends pwgen apache2-utils && \
   apt-get install -y --no-install-recommends ca-certificates tzdata && \
   rm -rf /var/lib/apt/lists/*
 

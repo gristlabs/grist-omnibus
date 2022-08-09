@@ -57,6 +57,8 @@ http:
       entryPoints:
         - web
 
+{{ $host := env "APP_HOST" }}
+{{if ne $host "localhost" }}
     https-route-grist:
       rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/`)"
       service: grist
@@ -101,17 +103,7 @@ http:
         - websecure
       tls:
         certResolver: letsencrypt
+{{end}}
 
-
-
-
-
-#    xmy-router77:
-#      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/whomeep`)"
-#      service: whoami
-#      entryPoints:
-#        - websecure
-#      tls:
-#        certResolver: letsencrypt
 
 notmuch: 3
