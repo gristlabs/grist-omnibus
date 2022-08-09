@@ -1,0 +1,48 @@
+http:
+  services:
+    grist:
+      loadBalancer:
+        servers:
+          - url: http://127.0.0.1:8484
+    dex:
+      loadBalancer:
+        servers:
+          - url: http://127.0.0.1:{{ env "EXT_PORT" }}
+    tfa:
+      loadBalancer:
+        servers:
+          - url: http://127.0.0.1:4181
+    whoami:
+      loadBalancer:
+        servers:
+          - url: http://127.0.0.1:2222
+
+  middlewares:
+    tfa:
+      forwardauth:
+        address: "http://127.0.0.1:4181"
+        authResponseHeaders: "X-Forwarded-User"
+
+  routers:
+    my-router:
+      rule: "PathPrefix(`/`)"
+      service: grist
+      middlewares:
+        - tfa
+    my-router3:
+      rule: "PathPrefix(`/signed-out`)"
+      service: grist
+    my-router4:
+      rule: "PathPrefix(`/api`)"
+      service: grist
+    my-router44:
+      rule: "PathPrefix(`/v/unknown`)"
+      service: grist
+    my-router2:
+      rule: "PathPrefix(`/dex`)"
+      service: dex
+    my-router77:
+      rule: "PathPrefix(`/who`)"
+      service: whoami
+
+notmuch: 3

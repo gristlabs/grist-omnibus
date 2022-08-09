@@ -1,0 +1,57 @@
+issuer: '{{ getenv "APP_HOME_URL" }}/dex'
+
+storage:
+  type: sqlite3
+  config:
+    file: /persist/auth/dex.db
+
+web:
+  http: '0.0.0.0:{{ getenv "EXT_PORT" }}'
+
+enablePasswordDB: true
+
+staticPasswords:
+- email: "paul@spacemonkey.com"
+  username: "paul"
+  hash: "$2y$10$ctwznE4tbrGHMHe9BNyeEuLsaDYMU7SDxJIdbc8IxaGV16XY6ipbe"
+
+# made like this:
+#   sudo apt install apache2-utils
+#   echo worble2blob | htpasswd -BinC 10 admin | cut -d: -f2
+
+oauth2:
+  skipApprovalScreen: true
+
+staticClients:
+- id: '{{ getenv "PROVIDERS_OIDC_CLIENT_ID" }}'
+  redirectURIs:
+  - '{{ getenv "APP_HOME_URL" }}/_oauth'
+  name: 'Grist'
+  secret: '{{ getenv "PROVIDERS_OIDC_CLIENT_SECRET" }}'
+
+connectors:
+
+ - type: google
+   id: google
+   name: Google
+   config:
+     issuer: https://accounts.google.com
+     clientID: PUT_CLIENT_ID_HERE
+     clientSecret: PUT_GOOGLE_CLIENT_SECRET_HERE
+     redirectURI: '{{ getenv "APP_HOME_URL" }}/dex/callback'
+
+ - type: microsoft
+   id: microsoft
+   name: Microsoft
+   config:
+     clientID: PUT_CLIENT_ID_HERE
+     clientSecret: PUT_CLIENT_SECRET_HERE
+     redirectURI: '{{ getenv "APP_HOME_URL" }}/dex/callback'
+
+logger:
+  level: "debug"
+  format: "text"
+
+frontend:
+  issuer: "Grist"
+  logoURL: '{{ getenv "APP_HOME_URL" }}/v/unknown/ui-icons/Logo/GristLogo.svg'
