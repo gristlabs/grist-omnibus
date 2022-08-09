@@ -1,5 +1,6 @@
 build:
 	docker build -t junk .
+	docker tag junk paulfitz/grist:omnibus
 
 run:
 	mkdir -p /tmp/zzz

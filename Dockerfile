@@ -13,7 +13,7 @@ FROM traefik:2.8 as traefik
 FROM traefik/whoami as whoami
 
 # Extend Grist image.
-FROM gristlabs/grist
+FROM gristlabs/grist:latest
 
 RUN \
   apt-get update && \

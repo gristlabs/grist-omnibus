@@ -5,11 +5,17 @@ set -e
 mkdir -p /persist/auth
 # chmod a+rwx /persist/auth
 
+export GRIST_SANDBOX_FLAVOR=gvisor
+
 export APP_HOME_URL="${APP_HOME_URL:-http://localhost:9999}"
 
 export EXT_PORT=$(node -e "console.log(new URL(process.env.APP_HOME_URL).port)")
 export EXT_PORT=${EXT_PORT:-9999}
 echo "EXT_PORT $EXT_PORT"
+
+export APP_HOST=$(node -e "console.log(new URL(process.env.APP_HOME_URL).hostname)")
+export APP_HOST=${APP_HOST:-localhost}
+echo "APP_HOST $APP_HOST"
 
 #ALT_PORT=8485
 
@@ -29,7 +35,6 @@ export GRIST_FORCE_LOGIN="true"
 
 # Start Traefik reverse proxy.
 (
-  cd /persist
   /scripts/run_traefik.sh
 ) &
 

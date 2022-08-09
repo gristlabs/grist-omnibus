@@ -24,25 +24,94 @@ http:
         authResponseHeaders: "X-Forwarded-User"
 
   routers:
-    my-router:
+    route-grist:
       rule: "PathPrefix(`/`)"
       service: grist
       middlewares:
         - tfa
-    my-router3:
+      entryPoints:
+        - web
+    route-signed-out:
       rule: "PathPrefix(`/signed-out`)"
       service: grist
-    my-router4:
+      entryPoints:
+        - web
+    route-api:
       rule: "PathPrefix(`/api`)"
       service: grist
-    my-router44:
+      entryPoints:
+        - web
+    route-assets:
       rule: "PathPrefix(`/v/unknown`)"
       service: grist
-    my-router2:
+      entryPoints:
+        - web
+    route-dex:
       rule: "PathPrefix(`/dex`)"
       service: dex
-    my-router77:
+      entryPoints:
+        - web
+    route-who:
       rule: "PathPrefix(`/who`)"
       service: whoami
+      entryPoints:
+        - web
+
+    https-route-grist:
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/`)"
+      service: grist
+      middlewares:
+        - tfa
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    https-route-signed-out:
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/signed-out`)"
+      service: grist
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    https-route-api:
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/api`)"
+      service: grist
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    https-route-assets:
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/v/unknown`)"
+      service: grist
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    https-route-dex:
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/dex`)"
+      service: dex
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    https-route-who:
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/who`)"
+      service: whoami
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+
+
+
+
+
+#    xmy-router77:
+#      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/whomeep`)"
+#      service: whoami
+#      entryPoints:
+#        - websecure
+#      tls:
+#        certResolver: letsencrypt
 
 notmuch: 3
