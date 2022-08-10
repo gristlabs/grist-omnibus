@@ -88,7 +88,7 @@ http:
       tls:
         certResolver: letsencrypt
     https-route-api-org:
-      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/o/{org:[^/]}/api`)"
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/o/{org:[^/]+}/api`)"
       service: grist
       entryPoints:
         - websecure

@@ -27,6 +27,7 @@ fi
 if [[ ! "$TEAM" = "" ]]; then
   export GRIST_SINGLE_ORG="$TEAM"
   export GRIST_DEFAULT_EMAIL="$EMAIL"
+  export GRIST_ORG_IN_PATH=false  # how to stop the /o/...?
 fi
 
 export APP_HOME_URL="$URL"
@@ -112,7 +113,13 @@ dex-entrypoint dex serve /persist/dex-full.yaml &
 # Start forward auth service. Delay a little bit since it depends on
 # other parts bein up and running.
 (
-  sleep 3
+  while true; do
+    curl $PROVIDERS_OIDC_ISSUER_URL && break || {
+      echo "Waiting for $PROVIDERS_OIDC_ISSUER_URL to look sane"
+      sleep 3
+    }
+  done
+  echo "I now hope $PROVIDERS_OIDC_ISSUER_URL is sane, starting traefik-forward-auth"
   traefik-forward-auth --port=$TFA_PORT
 ) &
 
