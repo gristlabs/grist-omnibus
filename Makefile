@@ -1,12 +1,12 @@
+PORT = 8484
+TEAM = meep
+
 build:
-	docker build -t junk .
-	docker tag junk paulfitz/grist:omnibus
+	docker build -t paulfitz/grist:omnibus .
 
 run:
-	mkdir -p /tmp/zzz
-	docker run --rm --name gristy -e APP_HOME_URL=http://localhost:9999 -v /tmp/zzz:/persist -p 9999:80 -it junk
+	mkdir -p /tmp/omnibus
+	docker run --rm --name grist -e URL=http://localhost:$(PORT) -v /tmp/omnibus:/persist -e EMAIL=owner@example.com -e PASSWORD=topsecret -e TEAM=$(TEAM) -p $(PORT):80 -it paulfitz/grist:omnibus
 
-tag:
-	make build
-	docker tag junk paulfitz/grist:omnibus
+push:
 	docker push paulfitz/grist:omnibus

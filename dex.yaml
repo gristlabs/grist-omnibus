@@ -1,0 +1,24 @@
+# See https://dexidp.io/docs/connectors/ for a list of possible connectors.
+# Some are quite general, such as https://dexidp.io/docs/connectors/oidc/
+#
+# For changes you make in this file to take effect, you must make it
+# accessible to the Grist container, mounted in a directory called /custom.
+
+connectors:
+
+ - type: google
+   id: google
+   name: Google
+   config:
+     issuer: https://accounts.google.com
+     clientID: PUT_CLIENT_ID_HERE
+     clientSecret: PUT_GOOGLE_CLIENT_SECRET_HERE
+     redirectURI: '{{ getenv "APP_HOME_URL" }}/dex/callback'
+
+ - type: microsoft
+   id: microsoft
+   name: Microsoft
+   config:
+     clientID: PUT_CLIENT_ID_HERE
+     clientSecret: PUT_CLIENT_SECRET_HERE
+     redirectURI: '{{ getenv "APP_HOME_URL" }}/dex/callback'

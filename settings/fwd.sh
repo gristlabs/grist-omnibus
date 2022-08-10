@@ -1,6 +1,0 @@
-export DEFAULT_PROVIDER=oidc
-export PROVIDERS_OIDC_CLIENT_ID=$(/scripts/invent.sh PROVIDERS_OIDC_CLIENT_ID)
-export PROVIDERS_OIDC_CLIENT_SECRET=$(/scripts/invent.sh PROVIDERS_OIDC_CLIENT_SECRET)
-export PROVIDERS_OIDC_ISSUER_URL="$APP_HOME_URL/dex"
-export SECRET=$(/scripts/invent.sh TFA_SECRET)
-export LOGOUT_REDIRECT="$APP_HOME_URL/signed-out"

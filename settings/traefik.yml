@@ -3,24 +3,24 @@ http:
     grist:
       loadBalancer:
         servers:
-          - url: http://127.0.0.1:8484
+          - url: 'http://127.0.0.1:{{ env "GRIST_PORT" }}'
     dex:
       loadBalancer:
         servers:
-          - url: http://127.0.0.1:{{ env "EXT_PORT" }}
+          - url: 'http://127.0.0.1:{{ env "EXT_PORT" }}'
     tfa:
       loadBalancer:
         servers:
-          - url: http://127.0.0.1:4181
+          - url: 'http://127.0.0.1:{{ env "TFA_PORT" }}'
     whoami:
       loadBalancer:
         servers:
-          - url: http://127.0.0.1:2222
+          - url: 'http://127.0.0.1:{{ env "WHOAMI_PORT" }}'
 
   middlewares:
     tfa:
       forwardauth:
-        address: "http://127.0.0.1:4181"
+        address: 'http://127.0.0.1:{{ env "TFA_PORT" }}'
         authResponseHeaders: "X-Forwarded-User"
 
   routers:
@@ -38,6 +38,11 @@ http:
         - web
     route-api:
       rule: "PathPrefix(`/api`)"
+      service: grist
+      entryPoints:
+        - web
+    route-api-org:
+      rule: "PathPrefix(`/o/{org:[^/]+}/api`)"
       service: grist
       entryPoints:
         - web
@@ -82,6 +87,13 @@ http:
         - websecure
       tls:
         certResolver: letsencrypt
+    https-route-api-org:
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/o/{org:[^/]}/api`)"
+      service: grist
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
     https-route-assets:
       rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/v/unknown`)"
       service: grist
@@ -104,6 +116,3 @@ http:
       tls:
         certResolver: letsencrypt
 {{end}}
-
-
-notmuch: 3

@@ -6,7 +6,7 @@
 # Includes bundled traefik, traefik-forward-auth, and dex.
 
 # Gather main dependencies.
-FROM thomseddon/traefik-forward-auth:2 as fwd
+FROM thomseddon/traefik-forward-auth:latest as fwd
 # FROM dexidp/dex:v2.33.0-distroless as dex
 FROM dexidp/dex:latest as dex
 FROM traefik:2.8 as traefik
@@ -46,3 +46,5 @@ COPY scripts /scripts
 RUN mkdir -p /persist/auth
 
 CMD /scripts/run.sh
+
+EXPOSE 80 443
