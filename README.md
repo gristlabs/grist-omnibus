@@ -1,30 +1,72 @@
+This is an experimental way to install Grist on a public
+server with minimal fuss, for evaluation purposes. It bundles:
 
-I'm playing with making a single-image version of Grist for
-people looking to try it out as a self-hosted app. Currently
-configuring auth is a bit daunting, maybe this will help?
+ * Grist itself from https://github.com/gristlabs/grist-core/ -
+   Grist is a handy spreadsheet / online database app,
+   presumably you like it and that's why you are here.
+ * A reverse proxy, Traefik https://github.com/traefik/traefik) -
+   we use this to coordinate with Let's Encrypt to get a
+   certificate for https traffic.
+ * An identity service, Dex https://github.com/dexidp/dex/ -
+   this can connect to LDAP servers, SAML providers, Google,
+   Microsoft, etc, and also (somewhat reluctantly) supports
+   hard-coded user/passwords that can be handy for initial
+   playing around.
+ * An authentication middleware, traefik-forward-auth,
+   https://github.com/thomseddon/traefik-forward-auth to
+   connect Grist and Dex via Traefik.
 
-Not ready for use yet! Don't do it!
+Here's the minimal configuration you need to provide.
+ * `EMAIL`: an email address, used for Let's Encrypt and for
+   initial login.
+ * `PASSWORD`: optional - if you set this, you'll be able to
+   login using it without configuring any other authentication
+   settings.
+ * `URL` - this is important, you need to provide the base
+   URL at which Grist will be accessed. It could be something
+   like `https://grist.example.com`, or `http://localhost:9999`.
+   No path element please. If not using `localhost`, the URL
+   will genuinely need to be reachable or things won't work out.
+ * `TEAM` - a short identifier, such as a company name
+   (`grist-labs`, `cool-beans`). Just `A-Z`, `a-z`, `0-9` and
+   `-` characters please.
 
-How to use.
+And the minimal storage needed is an empty directory mounted
+at `/persist`.
 
-  - Environment variables:
-    - URL: meaning
-	- EMAIL: thing
-	- PASSWORD (optional): thing
+So here is a complete docker invocation that would work on a public
+instance with ports 80 and 443 available:
+```
+mkdir -p /tmp/grist-test
+docker run \
+  -p 80:80 -p 443:443 \
+  -e URL=https://cool-beans.example.com \
+  -e TEAM=cool-beans \
+  -e EMAIL=owner@example.com \
+  -e PASSWORD=topsecret \
+  -v /tmp/grist-test:/persist \
+  --name grist --rm \
+  -it paulfitz/grist:omnibus
+```
 
-  - Volumes/mounts/directories:
-    - Mount an empty directory as /persist - this is where all stuff that
-	  should survive a server restart will be kept.
-    - Optionally, mount a directory with a dex.yaml file in it as /custom -
-	  this will customize the log in methods available.
+And here is an invocation on localhost port 9999 - the only
+differences are the `-p` port configuration and the `-e URL=` environment
+variable.
+```
+mkdir -p /tmp/grist-test
+docker run \
+  -p 9999:80 \
+  -e URL=http:localhost:9999 \
+  -e TEAM=cool-beans \
+  -e EMAIL=owner@example.com \
+  -e PASSWORD=topsecret \
+  -v /tmp/grist-test:/persist \
+  --name grist --rm \
+  -it paulfitz/grist:omnibus
+```
 
-  - Ports
-    - Ports 80 (for http) and 443 (for https) are available.
-	- If port 443 is used, then certificates will be requested from
-	  LetsEncrypt using the specified EMAIL.
-    - The container had better really be serving to the world at the
-	  given URL for LetsEncypt to confirm that the server is what it claims
-	  to be. If it isn't, https won't work.
-    - Avoid mapping to ports 17100, 17101, and 17102 due to a little wrinkle.
-	  When URL is http://localhost:NNNN a service matches that NNNN internally
-	  to work around an awkwardness in how localhost works in a container.
+DESCRIPTION OF WHAT TO EXPECT AT THIS POINT GOES HERE
+
+DESCRIPTION OF NEXT STEP - CONFIGURING PROPER AUTH METHODS - GOES HERE
+
+This repository is still very messy as I run experiments and try things out.
