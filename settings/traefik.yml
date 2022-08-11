@@ -24,11 +24,23 @@ http:
         authResponseHeaders: "X-Forwarded-User"
 
   routers:
-    route-grist:
-      rule: "PathPrefix(`/`)"
+    route-grist-login:
+      rule: "PathPrefix(`/auth/login`)"
       service: grist
       middlewares:
         - tfa
+      entryPoints:
+        - web
+    route-grist-auth:
+      rule: "PathPrefix(`/_oauth`)"
+      service: grist
+      middlewares:
+        - tfa
+      entryPoints:
+        - web
+    route-grist:
+      rule: "PathPrefix(`/`)"
+      service: grist
       entryPoints:
         - web
     route-signed-out:
@@ -64,11 +76,27 @@ http:
 
 {{ $host := env "APP_HOST" }}
 {{if ne $host "localhost" }}
-    https-route-grist:
-      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/`)"
+    https-route-grist-login:
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/auth/login`)"
       service: grist
       middlewares:
         - tfa
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    https-route-grist-auth:
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/_oauth`)"
+      service: grist
+      middlewares:
+        - tfa
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    https-route-grist:
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/`)"
+      service: grist
       entryPoints:
         - websecure
       tls:
