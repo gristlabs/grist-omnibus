@@ -56,7 +56,7 @@ variable.
 mkdir -p /tmp/grist-test
 docker run \
   -p 9999:80 \
-  -e URL=http:localhost:9999 \
+  -e URL=http://localhost:9999 \
   -e TEAM=cool-beans \
   -e EMAIL=owner@example.com \
   -e PASSWORD=topsecret \
