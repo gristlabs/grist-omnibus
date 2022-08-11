@@ -70,3 +70,14 @@ DESCRIPTION OF WHAT TO EXPECT AT THIS POINT GOES HERE
 DESCRIPTION OF NEXT STEP - CONFIGURING PROPER AUTH METHODS - GOES HERE
 
 This repository is still very messy as I run experiments and try things out.
+
+TODOS:
+
+ - [x] prep a complete image and sample invocation that works on a public host
+ - [x] prep a complete image and sample invocation that works on localhost
+ - [ ] clean up and condense the scripts+settings in this repo
+ - [ ] show screenshots to show what to expect
+ - [ ] document how to configure other auth methods and turning off hardcoded username/passwords
+ - [ ] include ARM image flavor
+ - [ ] add workflow for keeping image up to date
+ - [ ] move repo and image - maybe gristlabs/grist-omnibus or gristlabs/grist-dex for both?
