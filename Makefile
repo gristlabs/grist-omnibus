@@ -14,3 +14,6 @@ run:
 
 push:
 	docker push paulfitz/grist:omnibus
+
+pushwitharch:
+	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64,linux/arm64 -t paulfitz/grist:omnibus --push .
