@@ -78,6 +78,6 @@ TODOS:
  - [ ] clean up and condense the scripts+settings in this repo
  - [ ] show screenshots to show what to expect
  - [ ] document how to configure other auth methods and turning off hardcoded username/passwords
- - [ ] include ARM image flavor
+ - [x] include ARM image flavor
  - [ ] add workflow for keeping image up to date
  - [ ] move repo and image - maybe gristlabs/grist-omnibus or gristlabs/grist-dex for both?
