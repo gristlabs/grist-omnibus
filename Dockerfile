@@ -54,11 +54,10 @@ COPY --from=dex /usr/local/bin/docker-entrypoint /usr/local/bin/dex-entrypoint
 
 COPY --from=whoami /whoami /usr/local/bin/whoami
 
-COPY settings /settings
-COPY scripts /scripts
+COPY dex.yaml /settings/dex.yaml
+COPY traefik.yaml /settings/traefik.yaml
+COPY run.js /grist/run.js
 
-RUN mkdir -p /persist/auth
-
-CMD /scripts/run.sh
+CMD /grist/run.js
 
 EXPOSE 80 443

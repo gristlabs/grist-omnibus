@@ -21,7 +21,7 @@ http:
     tfa:
       forwardauth:
         address: 'http://127.0.0.1:{{ env "TFA_PORT" }}'
-        authResponseHeaders: [ "X-Forwarded-User" ]
+        authResponseHeaders: [ '{{ env "GRIST_FORWARD_AUTH_HEADER" }}' ]
 
   routers:
     route-grist-login:
