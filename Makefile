@@ -1,5 +1,5 @@
 PORT = 8484
-TEAM = meep
+TEAM = cool-beans
 IMAGE = paulfitz/grist:omnibus
 
 build:

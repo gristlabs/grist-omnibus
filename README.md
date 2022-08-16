@@ -65,17 +65,27 @@ docker run \
   -it paulfitz/grist:omnibus
 ```
 
-DESCRIPTION OF WHAT TO EXPECT AT THIS POINT GOES HERE
+You can change `dex.yaml` (for example, to fill in keys for Google
+and Microsoft sign-ins, or to remove them) and then either rebuild
+the image or make the custom settings available to the omnibus
+as `/custom/dex.yaml`:
 
-DESCRIPTION OF NEXT STEP - CONFIGURING PROPER AUTH METHODS - GOES HERE
+```
+docker run \
+  ...
+  -v $PWD/dex.yaml:/custom/dex.yaml \
+  ...
+  -it paulfitz/grist:omnibus
+```
 
-This repository is still very messy as I run experiments and try things out.
+You can tell it is being used because `Using /custom/dex.yaml` will
+be printed instead of `No /custom/dex.yaml`.
 
 TODOS:
 
  - [x] prep a complete image and sample invocation that works on a public host
  - [x] prep a complete image and sample invocation that works on localhost
- - [ ] clean up and condense the scripts+settings in this repo
+ - [x] clean up and condense the scripts+settings in this repo
  - [ ] show screenshots to show what to expect
  - [ ] document how to configure other auth methods and turning off hardcoded username/passwords
  - [x] include ARM image flavor

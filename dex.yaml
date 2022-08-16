@@ -8,7 +8,6 @@ storage:
 web:
   http: '0.0.0.0:{{ getenv "DEX_PORT" }}'
 
-
 logger:
   level: "debug"
   format: "text"

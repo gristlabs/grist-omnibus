@@ -71,7 +71,7 @@ function startDex() {
   const customFile = '/custom/dex.yaml';
   if (fs.existsSync(customFile)) {
     console.log(`Using ${customFile}`)
-    txt += fs.readFileSync(customFile, { encoding: 'utf-8' });
+    txt = fs.readFileSync(customFile, { encoding: 'utf-8' });
   } else {
     console.log(`No ${customFile}`)
   }
