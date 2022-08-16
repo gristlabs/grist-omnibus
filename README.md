@@ -21,7 +21,8 @@ Here's the minimal configuration you need to provide.
    initial login.
  * `PASSWORD`: optional - if you set this, you'll be able to
    login using it without configuring any other authentication
-   settings.
+   settings. You can add more accounts by adding `EMAIL2`,
+   `PASSWORD2`, `EMAIL3`, `PASSWORD3` etc.
  * `URL` - this is important, you need to provide the base
    URL at which Grist will be accessed. It could be something
    like `https://grist.example.com`, or `http://localhost:9999`.
