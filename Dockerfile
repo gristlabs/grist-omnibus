@@ -58,6 +58,10 @@ COPY dex.yaml /settings/dex.yaml
 COPY traefik.yaml /settings/traefik.yaml
 COPY run.js /grist/run.js
 
+# Make traefik-forward-auth trust self-signed certificates internally, if user
+# chooses to use one.
+RUN ln -s /custom/grist.crt /etc/ssl/certs/grist.pem
+
 CMD /grist/run.js
 
 EXPOSE 80 443

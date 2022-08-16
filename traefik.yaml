@@ -7,7 +7,7 @@ http:
     dex:
       loadBalancer:
         servers:
-          - url: 'http://127.0.0.1:{{ env "EXT_PORT" }}'
+          - url: 'http://127.0.0.1:{{ env "DEX_PORT" }}'
     tfa:
       loadBalancer:
         servers:
@@ -44,38 +44,43 @@ http:
       entryPoints:
         - web
     route-signed-out:
-      rule: "PathPrefix(`/signed-out`)"
+      rule: "Path(`/signed-out`)"
       service: grist
       entryPoints:
         - web
     route-api:
-      rule: "PathPrefix(`/api`)"
+      rule: "PathPrefix(`/api/`)"
       service: grist
       entryPoints:
         - web
     route-api-org:
-      rule: "PathPrefix(`/o/{org:[^/]+}/api`)"
+      rule: "PathPrefix(`/o/{org:[^/]+}/api/`)"
       service: grist
       entryPoints:
         - web
     route-assets:
-      rule: "PathPrefix(`/v/unknown`)"
+      rule: "PathPrefix(`/v/unknown/`)"
       service: grist
       entryPoints:
         - web
     route-dex:
-      rule: "PathPrefix(`/dex`)"
+      rule: "PathPrefix(`/dex/`)"
+      service: dex
+      entryPoints:
+        - web
+    route-dex-bare:
+      rule: "Path(`/dex`)"
       service: dex
       entryPoints:
         - web
     route-who:
-      rule: "PathPrefix(`/who`)"
+      rule: "Path(`/who`)"
       service: whoami
       entryPoints:
         - web
 
-{{ $host := env "APP_HOST" }}
-{{if ne $host "localhost" }}
+{{ $use_https := env "USE_HTTPS" }}
+{{if eq $use_https "true" }}
     https-route-grist-login:
       rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/auth/login`)"
       service: grist
@@ -83,8 +88,7 @@ http:
         - tfa
       entryPoints:
         - websecure
-      tls:
-        certResolver: letsencrypt
+      tls: {{ env "TLS" }}
     https-route-grist-auth:
       rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/_oauth`)"
       service: grist
@@ -92,55 +96,64 @@ http:
         - tfa
       entryPoints:
         - websecure
-      tls:
-        certResolver: letsencrypt
+      tls: {{ env "TLS" }}
     https-route-grist:
       rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/`)"
       service: grist
       entryPoints:
         - websecure
-      tls:
-        certResolver: letsencrypt
+      tls: {{ env "TLS" }}
     https-route-signed-out:
-      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/signed-out`)"
+      rule: "Host(`{{ env "APP_HOST" }}`) && Path(`/signed-out`)"
       service: grist
       entryPoints:
         - websecure
-      tls:
-        certResolver: letsencrypt
+      tls: {{ env "TLS" }}
     https-route-api:
-      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/api`)"
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/api/`)"
       service: grist
       entryPoints:
         - websecure
-      tls:
-        certResolver: letsencrypt
+      tls: {{ env "TLS" }}
     https-route-api-org:
-      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/o/{org:[^/]+}/api`)"
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/o/{org:[^/]+}/api/`)"
       service: grist
       entryPoints:
         - websecure
-      tls:
-        certResolver: letsencrypt
+      tls: {{ env "TLS" }}
     https-route-assets:
-      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/v/unknown`)"
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/v/unknown/`)"
       service: grist
       entryPoints:
         - websecure
-      tls:
-        certResolver: letsencrypt
+      tls: {{ env "TLS" }}
     https-route-dex:
-      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/dex`)"
+      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/dex/`)"
       service: dex
       entryPoints:
         - websecure
-      tls:
-        certResolver: letsencrypt
+      tls: {{ env "TLS" }}
+    https-route-dex-bare:
+      rule: "Host(`{{ env "APP_HOST" }}`) && Path(`/dex`)"
+      service: dex
+      entryPoints:
+        - websecure
+      tls: {{ env "TLS" }}
     https-route-who:
-      rule: "Host(`{{ env "APP_HOST" }}`) && PathPrefix(`/who`)"
+      rule: "Host(`{{ env "APP_HOST" }}`) && Path(`/who`)"
       service: whoami
       entryPoints:
         - websecure
-      tls:
-        certResolver: letsencrypt
+      tls: true
+{{end}}
+
+
+{{ $https := env "HTTPS" }}
+{{if eq $https "manual"}}
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /custom/grist.crt
+        keyFile: /custom/grist.key
 {{end}}

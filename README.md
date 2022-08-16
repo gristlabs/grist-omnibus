@@ -31,6 +31,12 @@ Here's the minimal configuration you need to provide.
  * `TEAM` - a short identifier, such as a company name
    (`grist-labs`, `cool-beans`). Just `A-Z`, `a-z`, `0-9` and
    `-` characters please.
+ * `HTTPS` - mandatory if `URL` is `https` protocol. Can be
+   `auto` (Let's Encrypt) if Grist is publically accessible and
+   you are fine with a certificate sourced from Let's Encrypt with
+   default settings. Otherwise use `external` (if you are dealing
+   with ssl termination yourself) or `manual` (if you can provide
+   a certificate).
 
 And the minimal storage needed is an empty directory mounted
 at `/persist`.
@@ -42,12 +48,13 @@ mkdir -p /tmp/grist-test
 docker run \
   -p 80:80 -p 443:443 \
   -e URL=https://cool-beans.example.com \
+  -e HTTPS=auto \
   -e TEAM=cool-beans \
   -e EMAIL=owner@example.com \
   -e PASSWORD=topsecret \
   -v /tmp/grist-test:/persist \
   --name grist --rm \
-  -it paulfitz/grist:omnibus
+  -it paulfitz/grist-omnibus
 ```
 
 And here is an invocation on localhost port 9999 - the only
@@ -63,7 +70,19 @@ docker run \
   -e PASSWORD=topsecret \
   -v /tmp/grist-test:/persist \
   --name grist --rm \
-  -it paulfitz/grist:omnibus
+  -it paulfitz/grist-omnibus
+```
+
+If providing your own certificate (`HTTPS=manual`), provide a
+private key and certificate file as `/custom/grist.key` and
+`custom/grist.crt` respectively:
+
+```
+docker run \
+  ...
+  -v $(PWD)/key.pem:/custom/grist.key \
+  -v $(PWD)/cert.pem:/custom/grist.crt \
+  ...
 ```
 
 You can change `dex.yaml` (for example, to fill in keys for Google
@@ -76,7 +95,7 @@ docker run \
   ...
   -v $PWD/dex.yaml:/custom/dex.yaml \
   ...
-  -it paulfitz/grist:omnibus
+  -it paulfitz/grist-omnibus
 ```
 
 You can tell it is being used because `Using /custom/dex.yaml` will

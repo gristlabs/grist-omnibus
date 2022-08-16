@@ -2,22 +2,44 @@
 
 const fs = require('fs');
 const child_process = require('child_process');
+const commander = require('commander');
 const fetch = require('node-fetch');
+const https = require('https');
 const path = require('path');
 
 async function main() {
+  const {program} = commander;
+  program.option('-p, --part <part>');
+  program.parse();
+  const options = program.opts();
+  const part = options.part || 'all';
+
   prepareDirectories();
   prepareMainSettings();
   prepareNetworkSettings();
-  startGrist();
-  startTraefik();
-  startDex();
-  await waitForDex();
-  startTfa();
-  startWho();
+  prepareCertificateSettings();
+  if (part === 'grist' || part === 'all') {
+    startGrist();
+  }
+  if (part === 'traefik' || part === 'all') {
+    startTraefik();
+  }
+  if (part === 'who' || part === 'all') {
+    startWho();
+  }
+  if (part === 'dex' || part === 'all') {
+    startDex();
+  }
+  if (part === 'tfa' || part === 'all') {
+    await waitForDex();
+    startTfa();
+  }
   await sleep(1000);
   console.log('I think everything has started up now');
-  console.log(`Listening internally on 80/443, externally at ${process.env.URL}`);
+  if (part === 'all') {
+    const ports = process.env.HTTPS ? '80/443' : '80';
+    console.log(`Listening internally on ${ports}, externally at ${process.env.URL}`);
+  }
 }
 
 main().catch(e => console.error(e));
@@ -38,25 +60,21 @@ function startGrist() {
 }
 
 function startTraefik() {
-  setBrittleEnv('DEFAULT_PROVIDER', 'oidc');
-  process.env.PROVIDERS_OIDC_CLIENT_ID = invent('PROVIDERS_OIDC_CLIENT_ID');
-  process.env.PROVIDERS_OIDC_CLIENT_SECRET = invent('PROVIDERS_OIDC_CLIENT_SECRETe');
-  process.env.PROVIDERS_OIDC_ISSUER_URL = `${process.env.APP_HOME_URL}/dex`;
-  process.env.SECRET = invent('TFA_SECRET');
-  process.env.LOGOUT_REDIRECT = `${process.env.APP_HOME_URL}/signed-out`;
-
   const flags = [];
   flags.push("--providers.file.filename=/settings/traefik.yaml");
   // flags.push("--api.dashboard=true --api.insecure=true");
   flags.push("--entryPoints.web.address=:80")
 
-  flags.push(`--certificatesResolvers.letsencrypt.acme.email=${process.env.EMAIL}`)
-  flags.push("--certificatesResolvers.letsencrypt.acme.storage=/persist/acme.json")
-  flags.push("--certificatesResolvers.letsencrypt.acme.tlschallenge=true")
-  flags.push("--entrypoints.websecure.address=:443")
+  if (process.env.HTTPS === 'auto') {
+    flags.push(`--certificatesResolvers.letsencrypt.acme.email=${process.env.EMAIL}`)
+    flags.push("--certificatesResolvers.letsencrypt.acme.storage=/persist/acme.json")
+    flags.push("--certificatesResolvers.letsencrypt.acme.tlschallenge=true")
+  }
+  if (process.env.HTTPS) {
+    flags.push("--entrypoints.websecure.address=:443")
+  }
 
   console.log("Calling traefik", flags);
-  //console.log(fs.readFileSync('/traefik.yml', { encoding: 'utf-8' }));
   console.log(child_process.execSync('env', { encoding: 'utf-8' }));
   child_process.spawn('traefik', flags, {
     env: process.env,
@@ -167,6 +185,13 @@ function prepareNetworkSettings() {
   process.env.GRIST_PORT = `${alt}7100`;
   process.env.TFA_PORT = `${alt}7101`;
   process.env.WHOAMI_PORT = `${alt}7102`;
+
+  setBrittleEnv('DEFAULT_PROVIDER', 'oidc');
+  process.env.PROVIDERS_OIDC_CLIENT_ID = invent('PROVIDERS_OIDC_CLIENT_ID');
+  process.env.PROVIDERS_OIDC_CLIENT_SECRET = invent('PROVIDERS_OIDC_CLIENT_SECRETe');
+  process.env.PROVIDERS_OIDC_ISSUER_URL = `${process.env.APP_HOME_URL}/dex`;
+  process.env.SECRET = invent('TFA_SECRET');
+  process.env.LOGOUT_REDIRECT = `${process.env.APP_HOME_URL}/signed-out`;
 }
 
 function setSynonym(name1, name2) {
@@ -252,14 +277,26 @@ function addDexUsers() {
 }
 
 async function waitForDex() {
+  const fetchOptions = process.env.HTTPS ? {
+    agent: new https.Agent({
+      // Allow self-signed certs for this wait loop. We only care if dex
+      // is up and running, not whether it has valid certs.
+      rejectUnauthorized: false,
+    })
+  } : {};
+  let delay = 0.1;
   while (true) {
-    console.log("Checking dex...");
+    const url = process.env.PROVIDERS_OIDC_ISSUER_URL + '/.well-known/openid-configuration';
+    console.log(`Checking dex... at ${url}`);
     try {
-      await fetch(process.env.PROVIDERS_OIDC_ISSUER_URL);
-      break;
+      const result = await fetch(url, fetchOptions);
+      console.log(`  got: ${result.status}`);
+      if (result.status === 200) { break; }
     } catch (e) {
-      await sleep(1000);
+      console.log(`  not ready: ${e}`);
     }
+    await sleep(1000 * delay);
+    delay = Math.min(5.0, delay * 1.2);
   }
   console.log("Happy with dex");
 }
@@ -268,4 +305,18 @@ function sleep(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+function prepareCertificateSettings() {
+  const url = new URL(process.env.URL);
+  if (url.protocol === 'https:') {
+    const https = String(process.env.HTTPS);
+    if (!['auto', 'external', 'manual'].includes(https)) {
+      throw new Error(`HTTPS environment variable must be set to: auto, external, or manual.`);
+    }
+    const tls = (https === 'auto') ? '{ certResolver: letsencrypt }' :
+          (https === 'manual') ? 'true' : 'false';
+    process.env.TLS = tls;
+    process.env.USE_HTTPS = 'true';
+  }
 }
