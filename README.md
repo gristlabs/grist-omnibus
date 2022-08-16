@@ -1,5 +1,13 @@
 This is an experimental way to install Grist on a public
-server with minimal fuss, for evaluation purposes. It bundles:
+server with minimal fuss, for evaluation purposes.
+
+So you can log in:
+![Screenshot from 2022-08-16 18-14-16](https://user-images.githubusercontent.com/118367/184994955-df9359d6-86b3-4147-9214-058b2c8c5fe7.png)
+
+And use Grist:
+![Screenshot from 2022-08-16 18-16-38](https://user-images.githubusercontent.com/118367/184995003-aa4ae6e7-6a05-420f-98a8-36b465bc2a81.png)
+
+It bundles:
 
  * Grist itself from https://github.com/gristlabs/grist-core/ -
    Grist is a handy spreadsheet / online database app,
