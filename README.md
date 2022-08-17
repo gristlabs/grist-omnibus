@@ -66,7 +66,7 @@ docker run \
   -e PASSWORD=topsecret \
   -v /tmp/grist-test:/persist \
   --name grist --rm \
-  -it paulfitz/grist-omnibus
+  -it gristlabs/grist-omnibus
 ```
 
 And here is an invocation on localhost port 9999 - the only
@@ -82,7 +82,7 @@ docker run \
   -e PASSWORD=topsecret \
   -v /tmp/grist-test:/persist \
   --name grist --rm \
-  -it paulfitz/grist-omnibus
+  -it gristlabs/grist-omnibus
 ```
 
 If providing your own certificate (`HTTPS=manual`), provide a
@@ -111,7 +111,7 @@ docker run \
   ...
   -v $PWD/dex.yaml:/custom/dex.yaml \
   ...
-  -it paulfitz/grist-omnibus
+  -it gristlabs/grist-omnibus
 ```
 
 You can tell it is being used because `Using /custom/dex.yaml` will
@@ -122,8 +122,8 @@ TODOS:
  - [x] prep a complete image and sample invocation that works on a public host
  - [x] prep a complete image and sample invocation that works on localhost
  - [x] clean up and condense the scripts+settings in this repo
- - [ ] show screenshots of what to expect
+ - [x] show screenshots of what to expect
  - [x] document how to configure other auth methods and turning off hardcoded username/passwords
  - [x] include ARM image flavor
  - [ ] add workflow for keeping image up to date
- - [ ] move repo and image if official-ish enough - maybe gristlabs/grist-omnibus?
+ - [x] move repo and image if official-ish enough - maybe gristlabs/grist-omnibus?
