@@ -1,9 +1,11 @@
 PORT = 8484
 TEAM = cool-beans
-IMAGE = paulfitz/grist-omnibus
+SOURCE = grist
+BASE = gristlabs/$(SOURCE)
+IMAGE = paulfitz/$(SOURCE)-omnibus
 
 build:
-	docker build -t $(IMAGE) .
+	docker build --build-arg BASE=$(BASE) -t $(IMAGE) .
 
 run:
 	mkdir -p /tmp/omnibus
@@ -22,13 +24,16 @@ push:
 buildwitharch:
 	DOCKER_BUILDKIT=1 docker buildx build \
           --platform linux/amd64,linux/arm64 \
+          --build-arg BASE=$(BASE) \
           -t $(IMAGE) .
 	DOCKER_BUILDKIT=1 docker buildx build \
+          --build-arg BASE=$(BASE) \
           -t $(IMAGE) --load .
 
 pushwitharch:
 	DOCKER_BUILDKIT=1 docker buildx build \
           --platform linux/amd64,linux/arm64 \
+          --build-arg BASE=$(BASE) \
           -t $(IMAGE) --push .
 
 makecert:

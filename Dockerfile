@@ -5,6 +5,8 @@
 # try it out.
 # Includes bundled traefik, traefik-forward-auth, and dex.
 
+ARG BASE=gristlabs/grist:latest
+
 # Gather main dependencies.
 FROM dexidp/dex:latest as dex
 FROM traefik:2.8 as traefik
@@ -27,7 +29,7 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GO111MODULE=on go build -a -
   -o /traefik-forward-auth github.com/thomseddon/traefik-forward-auth/cmd
 
 # Extend Grist image.
-FROM gristlabs/grist:latest
+FROM $BASE
 
 # apache2-utils is for htpasswd, used with dex
 RUN \
