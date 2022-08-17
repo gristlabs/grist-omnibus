@@ -66,7 +66,7 @@ docker run \
   -e PASSWORD=topsecret \
   -v /tmp/grist-test:/persist \
   --name grist --rm \
-  -it gristlabs/grist-omnibus
+  -it gristlabs/grist-omnibus  # or grist-ee-omnibus for enterprise
 ```
 
 And here is an invocation on localhost port 9999 - the only
@@ -82,7 +82,7 @@ docker run \
   -e PASSWORD=topsecret \
   -v /tmp/grist-test:/persist \
   --name grist --rm \
-  -it gristlabs/grist-omnibus
+  -it gristlabs/grist-omnibus  # or grist-ee-omnibus for enterprise
 ```
 
 If providing your own certificate (`HTTPS=manual`), provide a
@@ -111,7 +111,6 @@ docker run \
   ...
   -v $PWD/dex.yaml:/custom/dex.yaml \
   ...
-  -it gristlabs/grist-omnibus
 ```
 
 You can tell it is being used because `Using /custom/dex.yaml` will

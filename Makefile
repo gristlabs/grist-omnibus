@@ -1,8 +1,9 @@
 PORT = 8484
 TEAM = cool-beans
-SOURCE = grist
-BASE = gristlabs/$(SOURCE)
-IMAGE = gristlabs/$(SOURCE)-omnibus
+
+# Possible bases: gristlabs/grist, or gristlabs/grist-ee
+BASE = gristlabs/grist
+IMAGE = $(BASE)-omnibus
 
 build:
 	docker build --build-arg BASE=$(BASE) -t $(IMAGE) .
