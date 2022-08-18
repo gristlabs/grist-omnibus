@@ -160,6 +160,10 @@ function prepareMainSettings() {
   setDefaultEnv('GRIST_FORWARD_AUTH_HEADER', 'X-Forwarded-User');
   setBrittleEnv('GRIST_FORWARD_AUTH_LOGOUT_PATH', '_oauth/logout');
   setDefaultEnv('GRIST_FORCE_LOGIN', 'true');
+
+  if (!process.env.GRIST_SESSION_SECRET) {
+    process.env.GRIST_SESSION_SECRET = invent('GRIST_SESSION_SECRET');
+  }
 }
 
 function prepareNetworkSettings() {
