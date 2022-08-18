@@ -3,6 +3,9 @@ name: Push Docker image
 on:
   push:
     branches: [ release ]
+  schedule:
+    # Run at 6:41 UTC on Thursday
+    - cron: '41 6 * * 4'
   workflow_dispatch:
 
 jobs:

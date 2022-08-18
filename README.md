@@ -115,14 +115,3 @@ docker run \
 
 You can tell it is being used because `Using /custom/dex.yaml` will
 be printed instead of `No /custom/dex.yaml`.
-
-TODOS:
-
- - [x] prep a complete image and sample invocation that works on a public host
- - [x] prep a complete image and sample invocation that works on localhost
- - [x] clean up and condense the scripts+settings in this repo
- - [x] show screenshots of what to expect
- - [x] document how to configure other auth methods and turning off hardcoded username/passwords
- - [x] include ARM image flavor
- - [ ] add workflow for keeping image up to date
- - [x] move repo and image if official-ish enough - maybe gristlabs/grist-omnibus?
