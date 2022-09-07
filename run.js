@@ -192,7 +192,7 @@ function prepareNetworkSettings() {
 
   setBrittleEnv('DEFAULT_PROVIDER', 'oidc');
   process.env.PROVIDERS_OIDC_CLIENT_ID = invent('PROVIDERS_OIDC_CLIENT_ID');
-  process.env.PROVIDERS_OIDC_CLIENT_SECRET = invent('PROVIDERS_OIDC_CLIENT_SECRETe');
+  process.env.PROVIDERS_OIDC_CLIENT_SECRET = invent('PROVIDERS_OIDC_CLIENT_SECRET');
   process.env.PROVIDERS_OIDC_ISSUER_URL = `${process.env.APP_HOME_URL}/dex`;
   process.env.SECRET = invent('TFA_SECRET');
   process.env.LOGOUT_REDIRECT = `${process.env.APP_HOME_URL}/signed-out`;
