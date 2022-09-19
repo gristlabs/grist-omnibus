@@ -8,7 +8,7 @@
 ARG BASE=gristlabs/grist:latest
 
 # Gather main dependencies.
-FROM dexidp/dex:latest as dex
+FROM dexidp/dex:v2.33.1 as dex
 FROM traefik:2.8 as traefik
 FROM traefik/whoami as whoami
 
