@@ -35,8 +35,8 @@ Here's the minimal configuration you need to provide.
    log in without configuring any other authentication
    settings. You can add more accounts as `EMAIL2`,
    `PASSWORD2`, `EMAIL3`, `PASSWORD3` etc.
- * `TEAM` - a short identifier, such as a company or project name
-   (`grist-labs`, `cool-beans`). Just `A-Z`, `a-z`, `0-9` and
+ * `TEAM` - a short lowercase identifier, such as a company or project name
+   (`grist-labs`, `cool-beans`). Just `a-z`, `0-9` and
    `-` characters please.
  * `URL` - this is important, you need to provide the base
    URL at which Grist will be accessed. It could be something
