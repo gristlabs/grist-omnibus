@@ -29,7 +29,7 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GO111MODULE=on go build -a -
   -o /traefik-forward-auth github.com/thomseddon/traefik-forward-auth/cmd
 
 # Extend Grist image.
-FROM $BASE
+FROM $BASE as merge
 
 # apache2-utils is for htpasswd, used with dex
 RUN \
@@ -63,6 +63,10 @@ COPY run.js /grist/run.js
 # Make traefik-forward-auth trust self-signed certificates internally, if user
 # chooses to use one.
 RUN ln -s /custom/grist.crt /etc/ssl/certs/grist.pem
+
+# One last layer, to squash everything.
+FROM scratch
+COPY --from=merge / /
 
 CMD /grist/run.js
 
