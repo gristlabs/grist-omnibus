@@ -37,6 +37,9 @@ pushwitharch:
           --build-arg BASE=$(BASE) \
           -t $(IMAGE) --push .
 
+test:
+	./.github/test.sh
+
 makecert:
 	@echo "Put grist.example.com in your /etc/hosts as 127.0.0.1, and make a self-signed cert for it"
 	openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 -nodes
