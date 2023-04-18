@@ -54,6 +54,7 @@ function startGrist() {
       ...process.env,
       PORT: process.env.GRIST_PORT,
     },
+    cwd: '/grist',
     stdio: 'inherit',
     detached: true,
   });
