@@ -64,9 +64,11 @@ COPY run.js /grist/run.js
 # chooses to use one.
 RUN ln -s /custom/grist.crt /etc/ssl/certs/grist.pem
 
-# One last layer, to squash everything.
-FROM scratch
-COPY --from=merge / /
+# Squashing this way loses environment variables set in base image
+# so we need to revert it for now.
+# # One last layer, to squash everything.
+# FROM scratch
+# COPY --from=merge / /
 
 CMD /grist/run.js
 
