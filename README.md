@@ -13,19 +13,18 @@ And use Grist without fuss:
 
 It bundles:
 
- * Grist itself from https://github.com/gristlabs/grist-core/ -
+ * Grist itself from [grist-core](https://github.com/gristlabs/grist-core/) -
    Grist is a handy spreadsheet / online database app,
    presumably you like it and that's why you are here.
- * A reverse proxy, Traefik https://github.com/traefik/traefik) -
+ * A reverse proxy, [Traefik](https://github.com/traefik/traefik) -
    we use this to coordinate with Let's Encrypt to get a
    certificate for https traffic.
- * An identity service, Dex https://github.com/dexidp/dex/ -
+ * An identity service, [Dex](https://github.com/dexidp/dex/) -
    this can connect to LDAP servers, SAML providers, Google,
    Microsoft, etc, and also (somewhat reluctantly) supports
    hard-coded user/passwords that can be handy for a quick
    fuss-free test.
- * An authentication middleware, traefik-forward-auth,
-   https://github.com/thomseddon/traefik-forward-auth to
+ * An authentication middleware, [traefik-forward-auth](https://github.com/thomseddon/traefik-forward-auth) to
    connect Grist and Dex via Traefik.
 
 Here's the minimal configuration you need to provide.
