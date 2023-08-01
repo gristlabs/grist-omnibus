@@ -63,7 +63,6 @@ function startGrist() {
 function startTraefik() {
   const flags = [];
   flags.push("--providers.file.filename=/settings/traefik.yaml");
-  // flags.push("--api.dashboard=true --api.insecure=true");
   flags.push("--entryPoints.web.address=:80")
 
   if (process.env.HTTPS === 'auto') {
@@ -74,7 +73,6 @@ function startTraefik() {
   if (process.env.HTTPS) {
     flags.push("--entrypoints.websecure.address=:443")
   }
-
   console.log("Calling traefik", flags);
   console.log(child_process.execSync('env', { encoding: 'utf-8' }));
   child_process.spawn('traefik', flags, {
@@ -164,6 +162,17 @@ function prepareMainSettings() {
 
   if (!process.env.GRIST_SESSION_SECRET) {
     process.env.GRIST_SESSION_SECRET = invent('GRIST_SESSION_SECRET');
+  }
+
+  // When not using https either manually or via automation, the user
+  // presumably will tolerate cookies sent without https. See:
+  //   https://community.getgrist.com/t/solved-local-use-without-https/2852/11
+  if (!process.env.HTTPS && !process.env.INSECURE_COOKIE) {
+    // see https://github.com/thomseddon/traefik-forward-auth for
+    // documentation. This environment variable will be set when
+    // the traefik-forward-auth process is started (and others too,
+    // but won't have an impact on them).
+    process.env.INSECURE_COOKIE = 'true';
   }
 }
 
