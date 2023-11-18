@@ -130,7 +130,7 @@ function checkGvisor() {
     child_process.execSync(`runsc --network none ${flags} do true`, { encoding: 'utf-8' });
     console.log('gvisor ok');
   } catch (e) {
-    console.log('gvisor FAILED', e.message.trim().split('\n', 2).slice(0, 2).join('\n'));
+    console.log('gvisor FAILED');     // Stderr is already reported above, so don't repeat it.
     throw new Error("gvisor failed; consider a different GRIST_SANDBOX_FLAVOR");
   }
 }
