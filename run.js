@@ -74,7 +74,6 @@ function startTraefik() {
     flags.push("--entrypoints.websecure.address=:443")
   }
   console.log("Calling traefik", flags);
-  console.log(child_process.execSync('env', { encoding: 'utf-8' }));
   child_process.spawn('traefik', flags, {
     env: process.env,
     stdio: 'inherit',
@@ -99,7 +98,7 @@ function startDex() {
     env: process.env,
     stdio: 'inherit',
     detached: true,
-  });  
+  });
 }
 
 function startTfa() {
@@ -124,13 +123,24 @@ function startWho() {
   });
 }
 
-function prepareMainSettings() {
+function checkGvisor() {
+  const flags = process.env.GVISOR_FLAGS || '';
+  try {
+    console.log(`Checking gvisor... flags ${flags}`);
+    child_process.execSync(`runsc --network none ${flags} do true`, { encoding: 'utf-8' });
+    console.log('gvisor ok');
+  } catch (e) {
+    console.log('gvisor FAILED', e.message.trim().split('\n', 2).slice(0, 2).join('\n'));
+    throw new Error("gvisor failed; consider a different GRIST_SANDBOX_FLAVOR");
+  }
+}
 
-  // Enable sandboxing by default.
-  setDefaultEnv('GRIST_SANDBOX_FLAVOR', 'gvisor');
-  // TODO: gvisor may fail on some old hardware, or in environments with
-  // particular limits. It would be kind to catch that and give clear
-  // feedback to installer.
+function prepareMainSettings() {
+  if (process.env.GRIST_SANDBOX_FLAVOR === 'gvisor') {
+    // gvisor may fail on some old hardware, or in environments with
+    // particular limits. Check if it works to give early feedback to installer.
+    checkGvisor();
+  }
 
   // By default, hide UI elements that require a lot of setup.
   setDefaultEnv('GRIST_HIDE_UI_ELEMENTS', 'helpCenter,billing,templates,multiSite,multiAccounts');
