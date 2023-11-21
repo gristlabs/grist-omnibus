@@ -2,10 +2,22 @@
 
 const fs = require('fs');
 const child_process = require('child_process');
+const colors = require('colors/safe');
 const commander = require('commander');
 const fetch = require('node-fetch');
 const https = require('https');
 const path = require('path');
+
+function consoleLogger(level, color) {
+  return (message, ...args) => console.log(color(level) + ' [grist-omnibus] ' + message, ...args);
+}
+const log = {
+  debug: consoleLogger('debug', colors.blue),
+  info: consoleLogger('info', colors.green),
+  warn: consoleLogger('warn', colors.yellow),
+  error: consoleLogger('error', colors.red),
+};
+
 
 async function main() {
   const {program} = commander;
@@ -35,21 +47,30 @@ async function main() {
     startTfa();
   }
   await sleep(1000);
-  console.log('I think everything has started up now');
+  log.info('I think everything has started up now');
   if (part === 'all') {
     const ports = process.env.HTTPS ? '80/443' : '80';
-    console.log(`Listening internally on ${ports}, externally at ${process.env.URL}`);
+    log.info(`Listening internally on ${ports}, externally at ${process.env.URL}`);
   }
 }
 
-main().catch(e => console.error(e));
+main().catch(e => log.error(e));
 
 function prepareDirectories() {
   fs.mkdirSync('/persist/auth', { recursive: true });
 }
 
+function essentialProcess(label, childProcess) {
+  function fail(err) {
+    log.error(`${label} failed: ${err.message}`);
+    process.exit(1);
+  }
+  childProcess.on('error', (err) => fail(err));
+  childProcess.on('exit', (code, signal) => fail(new Error(`exited with ${signal || code}`)));
+}
+
 function startGrist() {
-  child_process.spawn('/grist/sandbox/run.sh', {
+  essentialProcess("grist", child_process.spawn('/grist/sandbox/run.sh', {
     env: {
       ...process.env,
       PORT: process.env.GRIST_PORT,
@@ -57,7 +78,7 @@ function startGrist() {
     cwd: '/grist',
     stdio: 'inherit',
     detached: true,
-  });
+  }));
 }
 
 function startTraefik() {
@@ -73,12 +94,12 @@ function startTraefik() {
   if (process.env.HTTPS) {
     flags.push("--entrypoints.websecure.address=:443")
   }
-  console.log("Calling traefik", flags);
-  child_process.spawn('traefik', flags, {
+  log.info("Calling traefik", flags);
+  essentialProcess("traefik", child_process.spawn('traefik', flags, {
     env: process.env,
     stdio: 'inherit',
     detached: true,
-  });
+  }));
 }
 
 function startDex() {
@@ -86,30 +107,30 @@ function startDex() {
   txt += addDexUsers();
   const customFile = '/custom/dex.yaml';
   if (fs.existsSync(customFile)) {
-    console.log(`Using ${customFile}`)
+    log.info(`Using ${customFile}`)
     txt = fs.readFileSync(customFile, { encoding: 'utf-8' });
   } else {
-    console.log(`No ${customFile}`)
+    log.info(`No ${customFile}`)
   }
   fs.writeFileSync('/persist/dex-full.yaml', txt, { encoding: 'utf-8' });
-  child_process.spawn('dex-entrypoint', [
+  essentialProcess("dex", child_process.spawn('dex-entrypoint', [
     'dex', 'serve', '/persist/dex-full.yaml'
   ], {
     env: process.env,
     stdio: 'inherit',
     detached: true,
-  });
+  }));
 }
 
 function startTfa() {
-  console.log('Starting traefik-forward-auth');
-  child_process.spawn('traefik-forward-auth', [
+  log.info('Starting traefik-forward-auth');
+  essentialProcess("traefik-forward-auth", child_process.spawn('traefik-forward-auth', [
     `--port=${process.env.TFA_PORT}`
   ], {
     env: process.env,
     stdio: 'inherit',
     detached: true,
-  });
+  }));
 }
 
 function startWho() {
@@ -123,25 +144,7 @@ function startWho() {
   });
 }
 
-function checkGvisor() {
-  const flags = process.env.GVISOR_FLAGS || '';
-  try {
-    console.log(`Checking gvisor... flags ${flags}`);
-    child_process.execSync(`runsc --network none ${flags} do true`, { encoding: 'utf-8' });
-    console.log('gvisor ok');
-  } catch (e) {
-    console.log('gvisor FAILED');     // Stderr is already reported above, so don't repeat it.
-    throw new Error("gvisor failed; consider a different GRIST_SANDBOX_FLAVOR");
-  }
-}
-
 function prepareMainSettings() {
-  if (process.env.GRIST_SANDBOX_FLAVOR === 'gvisor') {
-    // gvisor may fail on some old hardware, or in environments with
-    // particular limits. Check if it works to give early feedback to installer.
-    checkGvisor();
-  }
-
   // By default, hide UI elements that require a lot of setup.
   setDefaultEnv('GRIST_HIDE_UI_ELEMENTS', 'helpCenter,billing,templates,multiSite,multiAccounts');
 
@@ -281,7 +284,7 @@ function addDexUsers() {
     if (!email) { return false; }
     const passwd = process.env[passwordKey];
     if (!passwd) {
-      console.error(`Found ${emailKey} without a matching ${passwordKey}, skipping`);
+      log.warn(`Found ${emailKey} without a matching ${passwordKey}, skipping`);
       return true;
     }
     const hash = child_process.execSync('htpasswd -BinC 10 no_username', { input: passwd, encoding: 'utf-8' }).split(':')[1].trim();
@@ -311,18 +314,18 @@ async function waitForDex() {
   let delay = 0.1;
   while (true) {
     const url = process.env.PROVIDERS_OIDC_ISSUER_URL + '/.well-known/openid-configuration';
-    console.log(`Checking dex... at ${url}`);
+    log.info(`Checking dex... at ${url}`);
     try {
       const result = await fetch(url, fetchOptions);
-      console.log(`  got: ${result.status}`);
+      log.debug(`  got: ${result.status}`);
       if (result.status === 200) { break; }
     } catch (e) {
-      console.log(`  not ready: ${e}`);
+      log.debug(`  not ready: ${e}`);
     }
     await sleep(1000 * delay);
     delay = Math.min(5.0, delay * 1.2);
   }
-  console.log("Happy with dex");
+  log.info("Happy with dex");
 }
 
 function sleep(ms) {
