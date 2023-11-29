@@ -31,6 +31,11 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GO111MODULE=on go build -a -
 # Extend Grist image.
 FROM $BASE as merge
 
+# Enable sandboxing by default. It is generally important when sharing with
+# others. You may override it, e.g. "unsandboxed" uses no sandboxing but is
+# only OK if you trust all users fully.
+ENV GRIST_SANDBOX_FLAVOR=gvisor
+
 # apache2-utils is for htpasswd, used with dex
 RUN \
   apt-get update && \
