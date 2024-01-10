@@ -100,6 +100,12 @@ docker run \
 Remember if you are on a public server you don't need to do this, you can
 set `HTTPS=auto` and have Traefik + Let's Encrypt do the work for you.
 
+If you run the omnibus behind a separate reverse proxy that terminates SSL, then you should
+`HTTPS=external`, and set an additional environment variable `TRUSTED_PROXY_IPS` to the IP
+address or IP range of the proxy. This may be a comma-separated list, e.g.
+`127.0.0.1/32,192.168.1.7`. See Traefik's [forwarded
+headers](https://doc.traefik.io/traefik/routing/entrypoints/#forwarded-headers).
+
 You can change `dex.yaml` (for example, to fill in keys for Google
 and Microsoft sign-ins, or to remove them) and then either rebuild
 the image or (easier) make the custom settings available to the omnibus

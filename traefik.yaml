@@ -22,6 +22,7 @@ http:
       forwardauth:
         address: 'http://127.0.0.1:{{ env "TFA_PORT" }}'
         authResponseHeaders: [ '{{ env "GRIST_FORWARD_AUTH_HEADER" }}' ]
+        trustForwardHeader: '{{ env "TFA_TRUST_FORWARD_HEADER" }}'
     no-fwd:
       headers:
         customRequestHeaders:

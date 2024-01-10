@@ -98,9 +98,14 @@ function startTraefik() {
     flags.push("--entrypoints.web.http.redirections.entrypoint.scheme=https")
     flags.push("--entrypoints.web.http.redirections.entrypoint.to=websecure")
   }
+  let TFA_TRUST_FORWARD_HEADER = 'false';
+  if (process.env.TRUSTED_PROXY_IPS) {
+    flags.push(`--entryPoints.web.forwardedHeaders.trustedIPs=${process.env.TRUSTED_PROXY_IPS}`)
+    TFA_TRUST_FORWARD_HEADER = 'true';
+  }
   log.info("Calling traefik", flags);
   essentialProcess("traefik", child_process.spawn('traefik', flags, {
-    env: process.env,
+    env: {...process.env, TFA_TRUST_FORWARD_HEADER},
     stdio: 'inherit',
     detached: true,
   }));
