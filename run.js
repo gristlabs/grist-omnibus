@@ -94,6 +94,7 @@ function startTraefik() {
   if (process.env.HTTPS) {
     flags.push("--entrypoints.websecure.address=:443")
     // Redirect http -> https
+    // See: https://doc.traefik.io/traefik/routing/entrypoints/#redirection
     flags.push("--entrypoints.web.http.redirections.entrypoint.scheme=https")
     flags.push("--entrypoints.web.http.redirections.entrypoint.to=websecure")
   }
