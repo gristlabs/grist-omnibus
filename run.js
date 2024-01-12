@@ -315,9 +315,16 @@ function addDexUsers() {
 async function waitForDex() {
   const fetchOptions = process.env.HTTPS ? {
     agent: new https.Agent({
-      // Allow self-signed certs for this wait loop. We only care if dex
-      // is up and running, not whether it has valid certs.
-      rejectUnauthorized: false,
+      // If we are responsible for certs, wait for them to be
+      // set up and valid - don't accept default self-signed
+      // traefik certs. Otherwise traefik-forward-auth will
+      // fail immediately if it sees a self-signed cert, without
+      // giving letsencrypt time to make one for us.
+      //
+      // Otherwise, don't fret, the responsibility for certs
+      // being in place before the rest of grist-omnibus starts
+      // lies elsewhere. We only care if dex is up and running.
+      rejectUnauthorized: (process.env.HTTPS === 'auto'),
     })
   } : {};
   let delay = 0.1;
