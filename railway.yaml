@@ -1,9 +1,0 @@
-services:
-  grist:
-    image: gristlabs/grist-omnibus
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - /tmp/grist-test:/persist
-    command: "tail -f /dev/null"
