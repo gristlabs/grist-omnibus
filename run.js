@@ -79,14 +79,11 @@ function startTraefik() {
     flags.push("--entrypoints.web.http.redirections.entrypoint.scheme=https")
     flags.push("--entrypoints.web.http.redirections.entrypoint.to=websecure")
   }
-  let TFA_TRUST_FORWARD_HEADER = 'false';
   if (process.env.TRUSTED_PROXY_IPS) {
     flags.push(`--entryPoints.web.forwardedHeaders.trustedIPs=${process.env.TRUSTED_PROXY_IPS}`)
-    TFA_TRUST_FORWARD_HEADER = 'true';
   }
   log.info("Calling traefik", flags);
   essentialProcess("traefik", child_process.spawn('traefik', flags, {
-    env: {...process.env, TFA_TRUST_FORWARD_HEADER},
     stdio: 'inherit',
     detached: true,
   }));
@@ -166,42 +163,17 @@ function prepareMainSettings() {
   if (!process.env.GRIST_SESSION_SECRET) {
     process.env.GRIST_SESSION_SECRET = invent('GRIST_SESSION_SECRET');
   }
-
-  // When not using https either manually or via automation, the user
-  // presumably will tolerate cookies sent without https. See:
-  //   https://community.getgrist.com/t/solved-local-use-without-https/2852/11
-  if (!process.env.HTTPS && !process.env.INSECURE_COOKIE) {
-    // see https://github.com/thomseddon/traefik-forward-auth for
-    // documentation. This environment variable will be set when
-    // the traefik-forward-auth process is started (and others too,
-    // but won't have an impact on them).
-    process.env.INSECURE_COOKIE = 'true';
-  }
 }
 
 function prepareNetworkSettings() {
   const url = new URL(process.env.URL);
   process.env.APP_HOST = url.hostname || 'localhost';
-  // const extPort = parseInt(url.port || '9999', 10);
-  const extPort = url.port || '9999';
-  process.env.EXT_PORT = extPort;
-
-  // traefik-forward-auth will try to talk directly to dex, so it is
-  // important that URL works internally, withing the container. But
-  // if URL contains localhost, it really won't.  We can finess that
-  // by tying DEX_PORT to EXT_PORT in that case. As long as it isn't
-  // 80 or 443, since traefik is listening there...
-
   process.env.DEX_PORT = '9999';
-  if (process.env.APP_HOST === 'localhost' && extPort !== '80' && extPort !== '443') {
-    process.env.DEX_PORT = process.env.EXT_PORT;
-  }
 
   // Keep other ports out of the way of Dex port.
   const alt = String(process.env.DEX_PORT).charAt(0) === '1' ? '2' : '1';
   process.env.GRIST_PORT = `${alt}7100`;
-  process.env.TFA_PORT = `${alt}7101`;
-  process.env.WHOAMI_PORT = `${alt}7102`;
+  process.env.WHOAMI_PORT = `${alt}7101`;
 
   // Setup OIDC
   process.env.GRIST_OIDC_SP_HOST = process.env.APP_HOME_URL;
