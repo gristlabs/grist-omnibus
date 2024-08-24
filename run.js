@@ -28,8 +28,6 @@ async function main() {
   startTraefik();
   startWho();
   startDex();
-  await waitForDex();
-  startTfa();
 
   await sleep(1000);
   log.info('I think everything has started up now');
@@ -205,12 +203,13 @@ function prepareNetworkSettings() {
   process.env.TFA_PORT = `${alt}7101`;
   process.env.WHOAMI_PORT = `${alt}7102`;
 
-  setBrittleEnv('DEFAULT_PROVIDER', 'oidc');
-  process.env.PROVIDERS_OIDC_CLIENT_ID = invent('PROVIDERS_OIDC_CLIENT_ID');
-  process.env.PROVIDERS_OIDC_CLIENT_SECRET = invent('PROVIDERS_OIDC_CLIENT_SECRET');
-  process.env.PROVIDERS_OIDC_ISSUER_URL = `${process.env.APP_HOME_URL}/dex`;
-  process.env.SECRET = invent('TFA_SECRET');
-  process.env.LOGOUT_REDIRECT = `${process.env.APP_HOME_URL}/signed-out`;
+  // Setup OIDC
+  process.env.GRIST_OIDC_SP_HOST = process.env.APP_HOME_URL;
+  process.env.GRIST_OIDC_IDP_ISSUER = `${process.env.APP_HOME_URL}/dex`;
+  process.env.GRIST_OIDC_IDP_CLIENT_ID = invent('GRIST_OIDC_IDP_CLIENT_ID');
+  process.env.GRIST_OIDC_IDP_CLIENT_SECRET = invent('GRIST_OIDC_IDP_CLIENT_SECRET');
+  process.env.GRIST_OIDC_IDP_END_SESSION_ENDPOINT = `${process.env.APP_HOME_URL}/signed-out`;
+
 }
 
 function setSynonym(name1, name2) {
