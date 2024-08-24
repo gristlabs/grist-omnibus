@@ -3,7 +3,6 @@
 const fs = require('fs');
 const child_process = require('child_process');
 const colors = require('colors/safe');
-const commander = require('commander');
 const fetch = require('node-fetch');
 const https = require('https');
 const path = require('path');
@@ -20,38 +19,22 @@ const log = {
 
 
 async function main() {
-  const {program} = commander;
-  program.option('-p, --part <part>');
-  program.parse();
-  const options = program.opts();
-  const part = options.part || 'all';
-
   prepareDirectories();
   prepareMainSettings();
   prepareNetworkSettings();
   prepareCertificateSettings();
-  if (part === 'grist' || part === 'all') {
-    startGrist();
-  }
-  if (part === 'traefik' || part === 'all') {
-    startTraefik();
-  }
-  if (part === 'who' || part === 'all') {
-    startWho();
-  }
-  if (part === 'dex' || part === 'all') {
-    startDex();
-  }
-  if (part === 'tfa' || part === 'all') {
-    await waitForDex();
-    startTfa();
-  }
+
+  startGrist();
+  startTraefik();
+  startWho();
+  startDex();
+  await waitForDex();
+  startTfa();
+
   await sleep(1000);
   log.info('I think everything has started up now');
-  if (part === 'all') {
-    const ports = process.env.HTTPS ? '80/443' : '80';
-    log.info(`Listening internally on ${ports}, externally at ${process.env.URL}`);
-  }
+  const ports = process.env.HTTPS ? '80/443' : '80';
+  log.info(`Listening internally on ${ports}, externally at ${process.env.URL}`);
 }
 
 main().catch(e => log.error(e));
