@@ -3,8 +3,6 @@
 const fs = require('fs');
 const child_process = require('child_process');
 const colors = require('colors/safe');
-const fetch = require('node-fetch');
-const https = require('https');
 const path = require('path');
 
 function consoleLogger(level, color) {
@@ -253,38 +251,6 @@ function addDexUsers() {
   }
   deactivate();
   return txt.join('\n') + '\n';
-}
-
-async function waitForDex() {
-  const fetchOptions = process.env.HTTPS ? {
-    agent: new https.Agent({
-      // If we are responsible for certs, wait for them to be
-      // set up and valid - don't accept default self-signed
-      // traefik certs. Otherwise traefik-forward-auth will
-      // fail immediately if it sees a self-signed cert, without
-      // giving letsencrypt time to make one for us.
-      //
-      // Otherwise, don't fret, the responsibility for certs
-      // being in place before the rest of grist-omnibus starts
-      // lies elsewhere. We only care if dex is up and running.
-      rejectUnauthorized: (process.env.HTTPS === 'auto'),
-    })
-  } : {};
-  let delay = 0.1;
-  while (true) {
-    const url = process.env.PROVIDERS_OIDC_ISSUER_URL + '/.well-known/openid-configuration';
-    log.info(`Checking dex... at ${url}`);
-    try {
-      const result = await fetch(url, fetchOptions);
-      log.debug(`  got: ${result.status}`);
-      if (result.status === 200) { break; }
-    } catch (e) {
-      log.debug(`  not ready: ${e}`);
-    }
-    await sleep(1000 * delay);
-    delay = Math.min(5.0, delay * 1.2);
-  }
-  log.info("Happy with dex");
 }
 
 function sleep(ms) {
