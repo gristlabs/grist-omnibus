@@ -109,17 +109,6 @@ function startDex() {
   }));
 }
 
-function startTfa() {
-  log.info('Starting traefik-forward-auth');
-  essentialProcess("traefik-forward-auth", child_process.spawn('traefik-forward-auth', [
-    `--port=${process.env.TFA_PORT}`
-  ], {
-    env: process.env,
-    stdio: 'inherit',
-    detached: true,
-  }));
-}
-
 function startWho() {
   child_process.spawn('whoami', {
     env: {
