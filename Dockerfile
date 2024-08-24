@@ -8,9 +8,6 @@
 ARG BASE=gristlabs/grist:latest
 
 # Gather main dependencies.
-FROM dexidp/dex:v2.33.1 as dex
-FROM traefik:2.8 as traefik
-FROM traefik/whoami as whoami
 
 # recent public traefik-forward-auth image doesn't support arm,
 # so build it from scratch.
@@ -27,9 +24,12 @@ ARG TARGETOS TARGETARCH
 RUN echo "Compiling for [$TARGETOS $TARGETARCH] (will be blank if not using BuildKit)"
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GO111MODULE=on go build -a -installsuffix nocgo \
   -o /traefik-forward-auth github.com/thomseddon/traefik-forward-auth/cmd
+FROM dexidp/dex:v2.33.1 AS dex
+FROM traefik:2.8 AS traefik
+FROM traefik/whoami AS whoami
 
 # Extend Grist image.
-FROM $BASE as merge
+FROM $BASE AS merge
 
 # Enable sandboxing by default. It is generally important when sharing with
 # others. You may override it, e.g. "unsandboxed" uses no sandboxing but is
@@ -75,6 +75,6 @@ RUN ln -s /custom/grist.crt /etc/ssl/certs/grist.pem
 # FROM scratch
 # COPY --from=merge / /
 
-CMD /grist/run.js
+CMD ["/grist/run.js"]
 
 EXPOSE 80 443
