@@ -24,8 +24,6 @@ It bundles:
    Microsoft, etc, and also (somewhat reluctantly) supports
    hard-coded user/passwords that can be handy for a quick
    fuss-free test.
- * An authentication middleware, [traefik-forward-auth](https://github.com/thomseddon/traefik-forward-auth) to
-   connect Grist and Dex via Traefik.
 
 Here's the minimal configuration you need to provide.
  * `EMAIL`: an email address, used for Let's Encrypt and for

@@ -1,4 +1,4 @@
-PORT = 8484
+PORT = 9999
 TEAM = cool-beans
 
 # Possible bases: gristlabs/grist, or gristlabs/grist-ee
