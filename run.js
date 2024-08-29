@@ -155,7 +155,7 @@ function prepareMainSettings() {
 function prepareNetworkSettings() {
   const url = new URL(process.env.URL);
   process.env.APP_HOST = url.hostname || 'localhost';
-  process.env.DEX_PORT = '9999';
+  process.env.DEX_PORT = url.port || '9999';
 
   // Keep other ports out of the way of Dex port.
   const alt = String(process.env.DEX_PORT).charAt(0) === '1' ? '2' : '1';
