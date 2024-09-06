@@ -17,11 +17,11 @@ frontend:
   logoURL: '{{ getenv "APP_HOME_URL" }}/v/unknown/ui-icons/Logo/GristLogo.svg'
 
 staticClients:
-- id: '{{ getenv "GRIST_OIDC_IDP_CLIENT_ID" }}'
+- id: '{{ getenv "PROVIDERS_OIDC_CLIENT_ID" }}'
   redirectURIs:
-  - '{{ getenv "APP_HOME_URL" }}/oauth2/callback'
+  - '{{ getenv "APP_HOME_URL" }}/_oauth'
   name: 'Grist'
-  secret: '{{ getenv "GRIST_OIDC_IDP_CLIENT_SECRET" }}'
+  secret: '{{ getenv "PROVIDERS_OIDC_CLIENT_SECRET" }}'
 
 
 oauth2:
