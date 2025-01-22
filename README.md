@@ -3,7 +3,8 @@ Grist Omnibus
 
 This is an experimental way to install Grist on a server
 quickly with authentication and certificate handling set up
-out of the box.
+out of the box. Grist Labs also has [marketplace offerings](https://support.getgrist.com/install/grist-builder-edition/)
+for [AWS](https://support.getgrist.com/install/grist-builder-edition/#aws) and [Azure](https://support.getgrist.com/install/grist-builder-edition/#azure).
 
 So you and your colleagues can log in:
 ![Screenshot from 2022-08-16 18-14-16](https://user-images.githubusercontent.com/118367/184994955-df9359d6-86b3-4147-9214-058b2c8c5fe7.png)
