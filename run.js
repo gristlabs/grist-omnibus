@@ -29,7 +29,7 @@ async function main() {
 
   await sleep(1000);
   log.info('I think everything has started up now');
-  const ports = process.env.HTTPS ? '80/443' : '80';
+  const ports = ['manual', 'auto'].includes(process.env.HTTPS) ? '80/443' : '80';
   log.info(`Listening internally on ${ports}, externally at ${process.env.URL}`);
 }
 
@@ -63,14 +63,14 @@ function startGrist() {
 function startTraefik() {
   const flags = [];
   flags.push("--providers.file.filename=/settings/traefik.yaml");
-  flags.push("--entryPoints.web.address=:80")
+  flags.push("--entryPoints.web.address=:80");
 
   if (process.env.HTTPS === 'auto') {
     flags.push(`--certificatesResolvers.letsencrypt.acme.email=${process.env.EMAIL}`)
     flags.push("--certificatesResolvers.letsencrypt.acme.storage=/persist/acme.json")
     flags.push("--certificatesResolvers.letsencrypt.acme.tlschallenge=true")
   }
-  if (process.env.HTTPS) {
+  if (['auto', 'manual'].includes(process.env.HTTPS)) {
     flags.push("--entrypoints.websecure.address=:443")
     // Redirect http -> https
     // See: https://doc.traefik.io/traefik/routing/entrypoints/#redirection
@@ -266,6 +266,12 @@ function prepareCertificateSettings() {
     if (!['auto', 'external', 'manual'].includes(https)) {
       throw new Error(`HTTPS environment variable must be set to: auto, external, or manual.`);
     }
+    // If there is external HTTPS, something else will be in charge of
+    // setting it up, so don't do it ourselves.
+    if (https === 'external') {
+      return;
+    }
+
     const tls = (https === 'auto') ? '{ certResolver: letsencrypt }' :
           (https === 'manual') ? 'true' : 'false';
     process.env.TLS = tls;
