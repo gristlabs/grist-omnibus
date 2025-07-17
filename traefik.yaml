@@ -8,21 +8,12 @@ http:
       loadBalancer:
         servers:
           - url: 'http://127.0.0.1:{{ env "DEX_PORT" }}'
-    tfa:
-      loadBalancer:
-        servers:
-          - url: 'http://127.0.0.1:{{ env "TFA_PORT" }}'
     whoami:
       loadBalancer:
         servers:
           - url: 'http://127.0.0.1:{{ env "WHOAMI_PORT" }}'
 
   middlewares:
-    tfa:
-      forwardauth:
-        address: 'http://127.0.0.1:{{ env "TFA_PORT" }}'
-        authResponseHeaders: [ '{{ env "GRIST_FORWARD_AUTH_HEADER" }}' ]
-        trustForwardHeader: '{{ env "TFA_TRUST_FORWARD_HEADER" }}'
     no-fwd:
       headers:
         customRequestHeaders:
@@ -32,8 +23,6 @@ http:
     route-grist-login:
       rule: "PathPrefix(`/auth/login`) || PathPrefix(`/_oauth`)"
       service: grist
-      middlewares:
-        - tfa
       entryPoints:
         - web
 
@@ -63,8 +52,6 @@ http:
     https-route-grist-login:
       rule: "Host(`{{ env "APP_HOST" }}`) && (PathPrefix(`/auth/login`) || PathPrefix(`/_oauth`))"
       service: grist
-      middlewares:
-        - tfa
       entryPoints:
         - websecure
       tls: {{ env "TLS" }}
