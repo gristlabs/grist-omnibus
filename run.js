@@ -3,9 +3,6 @@
 const fs = require('fs');
 const child_process = require('child_process');
 const colors = require('colors/safe');
-const commander = require('commander');
-const fetch = require('node-fetch');
-const https = require('https');
 const path = require('path');
 
 function consoleLogger(level, color) {
@@ -20,38 +17,20 @@ const log = {
 
 
 async function main() {
-  const {program} = commander;
-  program.option('-p, --part <part>');
-  program.parse();
-  const options = program.opts();
-  const part = options.part || 'all';
-
   prepareDirectories();
   prepareMainSettings();
   prepareNetworkSettings();
   prepareCertificateSettings();
-  if (part === 'grist' || part === 'all') {
-    startGrist();
-  }
-  if (part === 'traefik' || part === 'all') {
-    startTraefik();
-  }
-  if (part === 'who' || part === 'all') {
-    startWho();
-  }
-  if (part === 'dex' || part === 'all') {
-    startDex();
-  }
-  if (part === 'tfa' || part === 'all') {
-    await waitForDex();
-    startTfa();
-  }
+
+  startGrist();
+  startTraefik();
+  startWho();
+  startDex();
+
   await sleep(1000);
   log.info('I think everything has started up now');
-  if (part === 'all') {
-    const ports = process.env.HTTPS ? '80/443' : '80';
-    log.info(`Listening internally on ${ports}, externally at ${process.env.URL}`);
-  }
+  const ports = process.env.HTTPS ? '80/443' : '80';
+  log.info(`Listening internally on ${ports}, externally at ${process.env.URL}`);
 }
 
 main().catch(e => log.error(e));
@@ -98,14 +77,11 @@ function startTraefik() {
     flags.push("--entrypoints.web.http.redirections.entrypoint.scheme=https")
     flags.push("--entrypoints.web.http.redirections.entrypoint.to=websecure")
   }
-  let TFA_TRUST_FORWARD_HEADER = 'false';
   if (process.env.TRUSTED_PROXY_IPS) {
     flags.push(`--entryPoints.web.forwardedHeaders.trustedIPs=${process.env.TRUSTED_PROXY_IPS}`)
-    TFA_TRUST_FORWARD_HEADER = 'true';
   }
   log.info("Calling traefik", flags);
   essentialProcess("traefik", child_process.spawn('traefik', flags, {
-    env: {...process.env, TFA_TRUST_FORWARD_HEADER},
     stdio: 'inherit',
     detached: true,
   }));
@@ -124,17 +100,6 @@ function startDex() {
   fs.writeFileSync('/persist/dex-full.yaml', txt, { encoding: 'utf-8' });
   essentialProcess("dex", child_process.spawn('dex-entrypoint', [
     'dex', 'serve', '/persist/dex-full.yaml'
-  ], {
-    env: process.env,
-    stdio: 'inherit',
-    detached: true,
-  }));
-}
-
-function startTfa() {
-  log.info('Starting traefik-forward-auth');
-  essentialProcess("traefik-forward-auth", child_process.spawn('traefik-forward-auth', [
-    `--port=${process.env.TFA_PORT}`
   ], {
     env: process.env,
     stdio: 'inherit',
@@ -185,49 +150,25 @@ function prepareMainSettings() {
   if (!process.env.GRIST_SESSION_SECRET) {
     process.env.GRIST_SESSION_SECRET = invent('GRIST_SESSION_SECRET');
   }
-
-  // When not using https either manually or via automation, the user
-  // presumably will tolerate cookies sent without https. See:
-  //   https://community.getgrist.com/t/solved-local-use-without-https/2852/11
-  if (!process.env.HTTPS && !process.env.INSECURE_COOKIE) {
-    // see https://github.com/thomseddon/traefik-forward-auth for
-    // documentation. This environment variable will be set when
-    // the traefik-forward-auth process is started (and others too,
-    // but won't have an impact on them).
-    process.env.INSECURE_COOKIE = 'true';
-  }
 }
 
 function prepareNetworkSettings() {
   const url = new URL(process.env.URL);
   process.env.APP_HOST = url.hostname || 'localhost';
-  // const extPort = parseInt(url.port || '9999', 10);
-  const extPort = url.port || '9999';
-  process.env.EXT_PORT = extPort;
-
-  // traefik-forward-auth will try to talk directly to dex, so it is
-  // important that URL works internally, withing the container. But
-  // if URL contains localhost, it really won't.  We can finess that
-  // by tying DEX_PORT to EXT_PORT in that case. As long as it isn't
-  // 80 or 443, since traefik is listening there...
-
-  process.env.DEX_PORT = '9999';
-  if (process.env.APP_HOST === 'localhost' && extPort !== '80' && extPort !== '443') {
-    process.env.DEX_PORT = process.env.EXT_PORT;
-  }
+  process.env.DEX_PORT = url.port || '9999';
 
   // Keep other ports out of the way of Dex port.
   const alt = String(process.env.DEX_PORT).charAt(0) === '1' ? '2' : '1';
   process.env.GRIST_PORT = `${alt}7100`;
-  process.env.TFA_PORT = `${alt}7101`;
-  process.env.WHOAMI_PORT = `${alt}7102`;
+  process.env.WHOAMI_PORT = `${alt}7101`;
 
-  setBrittleEnv('DEFAULT_PROVIDER', 'oidc');
-  process.env.PROVIDERS_OIDC_CLIENT_ID = invent('PROVIDERS_OIDC_CLIENT_ID');
-  process.env.PROVIDERS_OIDC_CLIENT_SECRET = invent('PROVIDERS_OIDC_CLIENT_SECRET');
-  process.env.PROVIDERS_OIDC_ISSUER_URL = `${process.env.APP_HOME_URL}/dex`;
-  process.env.SECRET = invent('TFA_SECRET');
-  process.env.LOGOUT_REDIRECT = `${process.env.APP_HOME_URL}/signed-out`;
+  // Setup OIDC
+  process.env.GRIST_OIDC_SP_HOST = process.env.APP_HOME_URL;
+  process.env.GRIST_OIDC_IDP_ISSUER = `${process.env.APP_HOME_URL}/dex`;
+  process.env.GRIST_OIDC_IDP_CLIENT_ID = invent('GRIST_OIDC_IDP_CLIENT_ID');
+  process.env.GRIST_OIDC_IDP_CLIENT_SECRET = invent('GRIST_OIDC_IDP_CLIENT_SECRET');
+  process.env.GRIST_OIDC_IDP_END_SESSION_ENDPOINT = `${process.env.APP_HOME_URL}/signed-out`;
+
 }
 
 function setSynonym(name1, name2) {
@@ -310,38 +251,6 @@ function addDexUsers() {
   }
   deactivate();
   return txt.join('\n') + '\n';
-}
-
-async function waitForDex() {
-  const fetchOptions = process.env.HTTPS ? {
-    agent: new https.Agent({
-      // If we are responsible for certs, wait for them to be
-      // set up and valid - don't accept default self-signed
-      // traefik certs. Otherwise traefik-forward-auth will
-      // fail immediately if it sees a self-signed cert, without
-      // giving letsencrypt time to make one for us.
-      //
-      // Otherwise, don't fret, the responsibility for certs
-      // being in place before the rest of grist-omnibus starts
-      // lies elsewhere. We only care if dex is up and running.
-      rejectUnauthorized: (process.env.HTTPS === 'auto'),
-    })
-  } : {};
-  let delay = 0.1;
-  while (true) {
-    const url = process.env.PROVIDERS_OIDC_ISSUER_URL + '/.well-known/openid-configuration';
-    log.info(`Checking dex... at ${url}`);
-    try {
-      const result = await fetch(url, fetchOptions);
-      log.debug(`  got: ${result.status}`);
-      if (result.status === 200) { break; }
-    } catch (e) {
-      log.debug(`  not ready: ${e}`);
-    }
-    await sleep(1000 * delay);
-    delay = Math.min(5.0, delay * 1.2);
-  }
-  log.info("Happy with dex");
 }
 
 function sleep(ms) {
