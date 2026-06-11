@@ -147,6 +147,13 @@ function prepareMainSettings() {
   setBrittleEnv('GRIST_FORWARD_AUTH_LOGOUT_PATH', '_oauth/logout');
   setDefaultEnv('GRIST_FORCE_LOGIN', 'true');
 
+  // Newer Grist versions gate the API behind a first-run installation wizard
+  // (visit /boot, sign in with GRIST_BOOT_KEY) until the instance is activated.
+  // The omnibus configures Grist entirely from env vars and gates all access
+  // behind traefik + dex forward-auth, so bring the instance up already
+  // "in service" and skip that wizard.
+  setDefaultEnv('GRIST_IN_SERVICE', 'true');
+
   if (!process.env.GRIST_SESSION_SECRET) {
     process.env.GRIST_SESSION_SECRET = invent('GRIST_SESSION_SECRET');
   }
