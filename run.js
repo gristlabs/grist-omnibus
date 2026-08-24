@@ -16,7 +16,13 @@ const log = {
 };
 
 
+const DEPRECATION_NOTICE =
+  'grist-omnibus is DEPRECATED and no longer developed. ' +
+  'Regular Grist (gristlabs/grist) now has quick setup and sign in with getgrist.com. ' +
+  'See https://github.com/gristlabs/grist-omnibus#readme for how to migrate.';
+
 async function main() {
+  log.warn(DEPRECATION_NOTICE);
   prepareDirectories();
   prepareMainSettings();
   prepareNetworkSettings();
@@ -31,6 +37,10 @@ async function main() {
   log.info('I think everything has started up now');
   const ports = ['manual', 'auto'].includes(process.env.HTTPS) ? '80/443' : '80';
   log.info(`Listening internally on ${ports}, externally at ${process.env.URL}`);
+  // Repeat the notice after the child processes' startup chatter so it is
+  // actually visible, and periodically so `docker logs --tail` shows it.
+  log.warn(DEPRECATION_NOTICE);
+  setInterval(() => log.warn(DEPRECATION_NOTICE), 24 * 60 * 60 * 1000).unref();
 }
 
 main().catch(e => log.error(e));

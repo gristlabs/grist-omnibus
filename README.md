@@ -1,10 +1,69 @@
-Grist Omnibus
-=============
+Grist Omnibus (DEPRECATED)
+==========================
 
-This is an experimental way to install Grist on a server
+> **⚠️ This project is deprecated and no longer being developed.**
+>
+> Grist Omnibus existed to make it easy to spin up Grist on a server with
+> logins working right away. Regular Grist now does that job better, so
+> there is no longer a good reason to use the omnibus:
+>
+> 1. **[Sign in with getgrist.com](https://support.getgrist.com/install/sign-in-with-grist/)** -
+>    a self-hosted Grist can let you and your colleagues log in using
+>    getgrist.com accounts, with no identity provider to configure.
+> 2. **[Quick setup](https://support.getgrist.com/install/first-run-setup/)** -
+>    Grist has a first-run setup wizard that walks you through the
+>    basics in the browser, instead of a pile of environment variables.
+> 3. **Active maintenance** - the regular `gristlabs/grist` image gets
+>    constant attention (new features, security fixes, dependency
+>    updates). This project does not.
+>
+> **What to use instead:**
+>
+>  * The regular Grist Docker image, `gristlabs/grist`. Start with the
+>    [self-managed Grist](https://support.getgrist.com/self-managed/)
+>    guide, then use quick setup and sign in with getgrist.com.
+>  * If you want a bundled, supported install with your own identity
+>    provider, see the [marketplace offerings](https://support.getgrist.com/install/grist-builder-edition/)
+>    for [AWS](https://support.getgrist.com/install/grist-builder-edition/#aws)
+>    and [Azure](https://support.getgrist.com/install/grist-builder-edition/#azure).
+>  * For SSO with your own OIDC or SAML provider, see the
+>    [OIDC](https://support.getgrist.com/install/oidc/) and
+>    [SAML](https://support.getgrist.com/install/saml/) docs for Grist itself.
+>
+> **If you are already using the omnibus:** the images continue to exist,
+> and your `/persist` directory holds an ordinary Grist installation
+> (`/persist/docs`, `/persist/home.sqlite3`) in the same layout the
+> regular `gristlabs/grist` image uses (`gristlabs/grist-ee` if you were
+> using `grist-ee-omnibus`). To migrate:
+>
+>  1. Decide on and configure authentication using one of the options
+>     above **before** starting the regular image on the old data. Grist
+>     without authentication treats every visitor as the default user.
+>     Accounts are matched by email address, so the new login method must
+>     give your users the same email addresses they had with the omnibus,
+>     or they will not see their documents.
+>  2. Run the regular image with the same `/persist` volume, and carry
+>     over the settings the omnibus applied for you:
+>     `GRIST_SINGLE_ORG` (your `TEAM`), `GRIST_DEFAULT_EMAIL` (your
+>     `EMAIL`), `GRIST_ORG_IN_PATH=false`, `GRIST_FORCE_LOGIN=true`,
+>     `GRIST_SANDBOX_FLAVOR=gvisor`, and
+>     `GRIST_SESSION_SECRET=$(cat /persist/params/GRIST_SESSION_SECRET)`
+>     (unless you had set your own).
+>  3. Once everything works, delete the omnibus-only entries in
+>     `/persist`: `auth`, `params`, `acme.json` and `dex-full.yaml`. They
+>     contain password hashes, session secrets and tokens that the
+>     regular image does not use.
+>
+> No further development of the omnibus should be expected.
+
+The original documentation follows for reference only. **Please do
+not start new installations with the omnibus.**
+
+----
+
+This was an experimental way to install Grist on a server
 quickly with authentication and certificate handling set up
-out of the box. Grist Labs also has [marketplace offerings](https://support.getgrist.com/install/grist-builder-edition/)
-for [AWS](https://support.getgrist.com/install/grist-builder-edition/#aws) and [Azure](https://support.getgrist.com/install/grist-builder-edition/#azure).
+out of the box.
 
 So you and your colleagues can log in:
 ![Screenshot from 2022-08-16 18-14-16](https://user-images.githubusercontent.com/118367/184994955-df9359d6-86b3-4147-9214-058b2c8c5fe7.png)
