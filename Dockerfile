@@ -1,5 +1,5 @@
 ############################################################
-# Grist omnibus image
+# Grist omnibus image (DEPRECATED - see README.md)
 # Grist doesn't have a built-in login system, which can be
 # a stumbling block for beginners or people just wanting to
 # try it out.
@@ -51,6 +51,8 @@ COPY run.js /grist/run.js
 # # One last layer, to squash everything.
 # FROM scratch
 # COPY --from=merge / /
+
+LABEL org.opencontainers.image.description="DEPRECATED: grist-omnibus is no longer developed. Use gristlabs/grist, which now has quick setup and sign in with getgrist.com. See https://github.com/gristlabs/grist-omnibus#readme"
 
 CMD ["/grist/run.js"]
 
